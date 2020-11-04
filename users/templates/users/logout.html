@@ -1,0 +1,7 @@
+{% extends 'main/layout.html' %}
+{% block content %}
+    <div class="text-center" style="margin-top: 180px!important;">
+        <h1 class="display-4">You have been logged out!</h1>
+        <p class="lead"><a href="{% url 'users:login' %}">Log in again</a></p>
+    </div>
+{% endblock content %}

@@ -1,0 +1,18 @@
+{% extends 'main/layout.html' %}
+{% block content %}
+    <div class="text-center" style="margin-top: 180px!important;">
+        <h1 class="display-4">Chat App</h1>
+        <p class="h2">An app to show Django Channels Functionalities</p>
+    </div>
+    {% if request.user.is_authenticated %}
+        <div class="text-center mt-5">
+            <a href="{% url 'users:profile' %}" role="button" class="btn btn-outline-primary btn-lg btn-block">My Profile</a>
+            <a href="{% url 'users:logout' %}" role="button" class="btn btn-outline-danger btn-lg btn-block">Log Out</a>
+        </div>
+    {% else %}
+        <div class="text-center mt-5">
+            <a href="{% url 'users:register' %}" role="button" class="btn btn-outline-success btn-lg btn-block">Create Account</a>
+            <a href="{% url 'users:login' %}" role="button" class="btn btn-outline-info btn-lg btn-block">Log In</a>
+        </div>
+    {% endif %}
+{% endblock content %}

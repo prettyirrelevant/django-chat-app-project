@@ -1,0 +1,13 @@
+{% extends 'main/layout.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <form action="{% url 'users:login' %}" method="post" class="mt-5 ">
+    {% csrf_token %}
+        <fieldset>
+            <legend>Log In Account - Chat App</legend>
+            {{ form|crispy }}
+            <p class="">Don't have an account yet? <a href="{% url 'users:register' %}">Register</a></p>
+            <button type="submit" class="btn btn-primary">Log In</button>
+        </fieldset>
+    </form>
+{% endblock content %}

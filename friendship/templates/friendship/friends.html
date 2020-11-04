@@ -1,0 +1,115 @@
+{% extends 'main/layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'friendship/friendship.css' %}">
+    <style>
+        .remove-dash :hover{
+            text-decoration: none;
+        }
+    </style>
+{% endblock head %}
+{% block content %}
+    <nav class="nav nav-tabs justify-content-around">
+        <a class="nav-item nav-link h3" href="{% url 'chat:conversations' %}">
+            <span class="d-none d-sm-inline">Messages</span>
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chat-right-text" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M2 1h12a1 1 0 0 1 1 1v11.586l-2-2A2 2 0 0 0 11.586 11H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h12z"/>
+                <path fill-rule="evenodd" d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+        </a>
+        <a class="nav-item nav-link h3 active" href="{% url 'friendship:friendship' %}">
+            <span class="d-none d-sm-inline">Friends</span>
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person-plus" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M11 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM1.022 13h9.956a.274.274 0 0 0 .014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 0 0 .022.004zm9.974.056v-.002.002zM6 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm4.5 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
+                <path fill-rule="evenodd" d="M13 7.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0v-2z"/>
+            </svg>
+        </a>
+        <a class="nav-item nav-link h3" href="{% url 'users:profile' %}" >
+            <span class="d-none d-sm-inline">Profile</span>
+            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13.468 12.37C12.758 11.226 11.195 10 8 10s-4.757 1.225-5.468 2.37A6.987 6.987 0 0 0 8 15a6.987 6.987 0 0 0 5.468-2.63z"/>
+                <path fill-rule="evenodd" d="M8 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
+            </svg>
+        </a>
+    </nav>
+    <div id="accordion" class="myaccordion">
+    <div class="card">
+        <div class="card-header" id="headingTwo">
+            <h2 class="mb-0">
+                <button class="d-flex align-items-center justify-content-between btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Friends ({{ friends|length }})
+                <span class="fa-stack fa-2x">
+                <i class="fas fa-circle fa-stack-2x"></i>
+                <i class="fas fa-plus fa-stack-1x fa-inverse"></i>
+                </span>
+                </button>
+            </h2>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+            <div class="card-body">
+                {% for friend in friends %}
+                    <div class="d-flex justify-content-between mb-4">
+                        <div>
+                            <img src="{{ friend.gravatar }}" alt="friend profile" class="img-fluid">
+                            <span class="px-2">{{ friend.username }}</span>
+                        </div>
+                        <div class="remove-dash">
+                            <a href="{% url 'chat:start-convo' friend.username %}">
+                                <i class="far fa-envelope fa-2x text-success"></i>
+                            </a>
+                            <a href="#" class="px-2 text-danger" style="">
+                                <i class="fas fa-ban fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header" id="headingThree">
+            <h2 class="mb-0">
+                <button class="d-flex align-items-center justify-content-between btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Pending Requests ({{ requests|length }})
+                <span class="fa-stack fa-2x">
+                <i class="fas fa-circle fa-stack-2x"></i>
+                <i class="fas fa-plus fa-stack-1x fa-inverse"></i>
+                </span>
+                </button>
+            </h2>
+        </div>
+        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+            <div class="card-body">
+                {% for friend in requests %}
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <img src="{{ friend.gravatar }}" alt="friend profile" class="img-fluid">
+                            <span class="px-2">{{ friend.username }}</span>
+                        </div>
+                        <div class="remove-dash">
+                            <a href="{% url 'friendship:accept-request' friend.username %}" class="text-success">
+                                <i class="fas fa-check fa-2x"></i>
+                            </a>
+                            <a href="{% url 'friendship:reject-request' friend.username %}" class="px-2 text-danger" style="">
+                                <i class="fas fa-times fa-2x"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="container">
+        <form action="{% url 'friendship:friendship' %}" method="post" class="mt-5 ">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary btn-block">Add Friend</button>
+        </form>
+    </div>
+{% endblock content %}
+{% block scripts %}
+    <script src="{% static 'friendship/friendship.js' %}"></script>
+{% endblock %}

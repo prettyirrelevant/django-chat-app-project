@@ -1,0 +1,243 @@
+{% extends 'main/chat_base.html' %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'chat/chat.css' %}">
+{% endblock head %}
+
+{% block content %}
+<section class="msger">
+    <header class="msger-header">
+        <div class="msger-header-title">
+            <a href="{% url 'chat:conversations' %}" class="hide-line">
+                <svg width="2em" height="2em" viewBox="0 0 16 16" class="bi bi-arrow-left" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 1 0 .708L3.207 8l2.647 2.646a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0z"/>
+                    <path fill-rule="evenodd" d="M2.5 8a.5.5 0 0 1 .5-.5h10.5a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+            </a>
+            {% if conversation.initiator.username == user.username %}
+                <img src="{{ conversation.receiver.avatar }}" alt="">
+                {{ conversation.receiver.username }}
+            {% else %}
+                <img src="{{ conversation.initiator.avatar }}" alt="">
+                {{ conversation.initiator.username }}
+            {% endif %}
+        </div>
+    </header>
+
+
+    <main class="msger-chat">
+        {% for message in conversation.message_set.all %}
+            {% if message.sender.username == user.username %}
+                <div class="msg right-msg">
+                    <div class="msg-img" style="background-image: url({{ message.sender.avatar }})"></div>
+                    <div class="msg-bubble">
+                        <div class="msg-info">
+                            <div class="msg-info-name">{{ message.sender.username }}</div>
+                            <div class="msg-info-time">{{ message.timestamp|date:"c" }}</div>
+                        </div>
+                        <div class="msg-text">
+                            {{ message.text }}
+                        </div>
+                        {% if message.attachment %}
+                            <img src="{{ message.attachment.url }}" alt="attachment">
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="msg left-msg">
+                    <div class="msg-img" style="background-image: url({{ message.sender.avatar }})"></div>
+                    <div class="msg-bubble">
+                        <div class="msg-info">
+                            <div class="msg-info-name">{{ message.sender.username }}</div>
+                            <div class="msg-info-time">{{ message.timestamp|date:"c" }}</div>
+                        </div>
+                        <div class="msg-text">
+                            {{ message.text }}
+                        </div>
+                        {% if message.attachment %}
+                            <img src="{{ message.attachment.url }}" alt="attachment">
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+    </main>
+    {{ conversation.id|json_script:"room-name" }}
+
+    <form class="msger-inputarea">
+        <input type="text" class="msger-input" placeholder="Enter your message...">
+        <label for="image-input">
+            <i class="fas fa-camera fa-500px"></i>
+        </label>
+        <input type="file" onchange="previewFile()" id="image-input" class="d-none" accept=".png, .jpg, .jpeg">
+        <button type="submit" class="msger-send-btn">Send</button>
+    </form>
+</section>
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+    // for now it only works for one image
+    const get = (selector, root = document) => root.querySelector(selector);
+
+    let attachment; //the image attached
+
+    // Uses moment to format the dates. Still of how to do this without reloading the page.
+    const dates = document.querySelectorAll('.msg-info-time')
+    dates.forEach(el => {
+        let time = el.textContent
+        el.textContent = moment(time).fromNow()
+    })
+
+    // The currently logged in user
+    const currentUserImg = "{{ user.avatar }}";
+    const currentUserName = "{{ user.username }}";
+
+    // The other party in the conversation
+    {% if conversation.initiator.username == user.username %}
+        const recipientImg = "{{ conversation.receiver.avatar }}";
+        const recipientUserName = "{{ conversation.receiver.username }}";
+    {% else %}
+        const recipientImg = "{{ conversation.initiator.avatar }}";
+        const recipientUserName = "{{ conversation.initiator.username }}";
+    {% endif %}
+
+    const msgForm = get(".msger-inputarea");
+    const msgInput = get(".msger-input");
+    const msgChat = get(".msger-chat");
+    const roomName = JSON.parse(get("#room-name").textContent);
+    const chatSocket = new WebSocket(
+        'wss://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    // Focus on the input tag and scroll to the bottom
+    msgInput.focus();
+    msgChat.scrollTop = msgChat.scrollHeight;
+    // End
+
+    chatSocket.onmessage = e => {
+        const data = JSON.parse(e.data);
+        if(data.hasOwnProperty('attachment')){
+            if (data.sender === recipientUserName) {
+                appendMessage(recipientUserName, recipientImg, 'left', data.message, data.time, data.attachment)
+            }else{
+                appendMessage(currentUserName, currentUserImg, 'right', data.message, data.time, data.attachment)
+            }
+        }else{
+            if (data.sender === recipientUserName) {
+                appendMessage(recipientUserName, recipientImg, 'left', data.message, data.time)
+            }else{
+                appendMessage(currentUserName, currentUserImg, 'right', data.message, data.time)
+            }
+        }
+    };
+
+    chatSocket.onclose = e => console.error(e);
+
+    // the function that grabs the image and converts to base64
+    const previewFile = () => {
+        const file = document.querySelector('input[type=file]').files[0];
+	var img = document.createElement("img");
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+           img.src = reader.result;
+           img.onload = function() {
+	        var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                canvas.width = 300;
+                canvas.height = canvas.width * (img.height / img.width);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // SEND THIS DATA TO WHEREVER YOU NEED IT
+                var data = canvas.toDataURL('image/png');
+		
+		// convert image file to base64 string
+                attachment = {
+                     format: data.split(',')[0].split('/')[1].split(';')[0],
+                     data: data.replace(/^data:.+;base64,/, '')
+                }
+
+           }
+        }, false);
+
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    }
+
+    msgForm.addEventListener("submit", event => {
+        event.preventDefault();
+
+        let message;
+        const msgText = msgInput.value;
+
+        // checks if both message and attachment are empty
+        if(!msgText && !attachment){
+
+            msgInput.value = "Attachment and message cannot be empty!"
+            setTimeout(()=>{
+                msgInput.value = "";
+            }, 1000);
+
+        }else{
+            message = JSON.stringify({
+                'message': msgText,
+                {% if conversation.initiator.username == user.username %}
+                    'recepient': "{{ conversation.receiver.username }}",
+                {% else %}
+                    'recepient': "{{ conversation.initiator.username }}",
+                {% endif %}
+                    'sender': "{{ user.username }}",
+                    attachment,
+                    'time': Date.now()
+            });
+            chatSocket.send(message);
+            msgInput.value = "";
+        }
+    });
+
+    const appendMessage = (name, img, side, text, timestamp, url=undefined) => {
+        let msgHTML;
+        if (url){
+            msgHTML = `
+                <div class="msg ${side}-msg">
+                <div class="msg-img" style="background-image: url(${img})"></div>
+
+                <div class="msg-bubble">
+                <div class="msg-info">
+                <div class="msg-info-name">${name}</div>
+                <div class="msg-info-time">${moment.utc(timestamp).fromNow()}</div>
+                </div>
+
+                <div class="msg-text">${text}</div>
+                <img src=${url} alt="attachment">
+                </div>
+                </div>
+                `;
+        }else{
+            msgHTML = `
+                <div class="msg ${side}-msg">
+                <div class="msg-img" style="background-image: url(${img})"></div>
+
+                <div class="msg-bubble">
+                <div class="msg-info">
+                <div class="msg-info-name">${name}</div>
+                <div class="msg-info-time">${moment.utc(timestamp).fromNow()}</div>
+                </div>
+
+                <div class="msg-text">${text}</div>
+                </div>
+                </div>
+                `;
+        }
+        msgChat.insertAdjacentHTML("beforeend", msgHTML);
+        msgChat.scrollTop = msgChat.scrollHeight;
+    }
+    </script>
+{% endblock scripts %}
