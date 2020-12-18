@@ -128,6 +128,8 @@ LOGIN_URL = "users:login"
 
 STATIC_URL = "/static/"
 
+STATIC_ROOT = "static"
+
 ASGI_APPLICATION = "chat_app_project.asgi.application"
 
 CHANNEL_LAYERS = {
