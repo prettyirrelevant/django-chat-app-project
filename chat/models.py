@@ -1,9 +1,3 @@
-import mimetypes
-from io import BytesIO
-from pathlib import Path
-
-from PIL import Image
-from django.core.files import File
 from django.db import models
 
 from users.models import MyUser

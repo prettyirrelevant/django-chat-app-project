@@ -13,13 +13,15 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(
+    os.path.dirname((os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'fd2f471d4f64c134a556d8f3370e687b24ef33fa33c545733901a8395e4de8db'
+SECRET_KEY = "fd2f471d4f64c134a556d8f3370e687b24ef33fa33c545733901a8395e4de8db"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -41,7 +43,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "storages",
 ]
 
 MIDDLEWARE = [
@@ -125,7 +126,9 @@ LOGIN_REDIRECT_URL = "users:profile"
 
 LOGIN_URL = "users:login"
 
-ASGI_APPLICATION = "chat_app_project.routing.application"
+STATIC_URL = "/static/"
+
+ASGI_APPLICATION = "chat_app_project.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
@@ -135,3 +138,7 @@ CHANNEL_LAYERS = {
         },
     }
 }
+
+MEDIA_ROOT = 'media'
+
+MEDIA_URL = '/media/'
