@@ -109,7 +109,7 @@
     const msgChat = get(".msger-chat");
     const roomName = JSON.parse(get("#room-name").textContent);
     const chatSocket = new WebSocket(
-        'ws://'
+        'wss://'
         + window.location.host
         + '/ws/chat/'
         + roomName
