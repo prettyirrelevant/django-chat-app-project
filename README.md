@@ -14,3 +14,5 @@ To run the project locally.
 - `$ python manage.py channels_layer`
 - `$ python manage.py runserver`
 - Visit http://localhost:8000 
+## Note
+Pictures uploaded while chatting do not persist due to Heroku's ephemeral nature
